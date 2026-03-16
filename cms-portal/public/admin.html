@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CMS Portal Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0f172a;--ink2:#1e293b;
+  --bg:#f8fafc;--surface:#fff;
+  --border:#e2e8f0;--border2:#cbd5e1;
+  --text:#0f172a;--body:#334155;--muted:#64748b;--faint:#94a3b8;
+  --accent:#2563eb;--accent-dim:#eff6ff;--accent-mid:#bfdbfe;
+  --green:#059669;--green-dim:#ecfdf5;
+  --red:#dc2626;--red-dim:#fef2f2;--red-mid:#fecaca;
+  --amber:#d97706;
+  --r:10px;--r2:7px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.05);
+  --sh2:0 4px 12px rgba(0,0,0,.1),0 2px 4px rgba(0,0,0,.06);
+}
+html{font-size:14px}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--ink);display:flex;align-items:center;justify-content:center;z-index:999;padding:20px}
+.login-card{background:var(--surface);border-radius:16px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px;justify-content:center}
+.login-mark{width:36px;height:36px;background:linear-gradient(135deg,#2563eb,#60a5fa);border-radius:9px;display:flex;align-items:center;justify-content:center}
+.login-co{font-size:14px;font-weight:700;color:var(--text)}
+.login-title{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;color:var(--text);margin-bottom:6px;text-align:center}
+.login-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:24px;font-weight:300}
+.login-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px 14px;font-family:inherit;font-size:14px;color:var(--text);outline:none;transition:border-color .13s;margin-bottom:10px;text-align:center;letter-spacing:2px}
+.login-input:focus{border-color:var(--accent)}
+.login-btn{width:100%;background:var(--ink);color:#fff;border:none;border-radius:8px;padding:12px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:background .13s}
+.login-btn:hover{background:var(--accent)}
+.login-err{color:var(--red);font-size:12px;text-align:center;margin-top:8px;display:none}
+
+/* MAIN LAYOUT */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.show{display:flex}
+
+/* HEADER */
+.hdr{background:var(--ink);height:56px;display:flex;align-items:center;padding:0 28px;flex-shrink:0}
+.hdr-in{max-width:1200px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.hdr-logo{display:flex;align-items:center;gap:10px}
+.hdr-mark{width:28px;height:28px;background:linear-gradient(135deg,#2563eb,#60a5fa);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.hdr-name{font-size:13px;font-weight:700;color:#fff}
+.hdr-sep{width:1px;height:16px;background:rgba(255,255,255,.12);margin:0 12px}
+.hdr-section{font-size:11px;font-weight:500;color:rgba(255,255,255,.35);letter-spacing:.8px;text-transform:uppercase}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-user{font-size:11.5px;color:rgba(255,255,255,.4)}
+.btn-logout{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);border-radius:6px;padding:4px 10px;font-family:inherit;font-size:11px;font-weight:500;cursor:pointer;transition:all .13s}
+.btn-logout:hover{background:rgba(255,255,255,.13);color:#fff}
+
+/* BODY */
+.body{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:28px;display:grid;grid-template-columns:1fr 380px;gap:20px;align-items:start}
+
+/* PANELS */
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--bg)}
+.panel-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.panel-title-icon{width:24px;height:24px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.panel-count{background:var(--accent-dim);color:var(--accent);border-radius:99px;padding:1px 8px;font-size:10px;font-weight:700}
+.panel-body{padding:16px 20px}
+
+/* PORTAL LIST */
+.portal-list{display:flex;flex-direction:column;gap:6px}
+.portal-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;
+  border:1.5px solid var(--border);
+  border-radius:var(--r2);
+  background:var(--surface);
+  transition:all .13s;
+}
+.portal-item:hover{border-color:var(--border2);box-shadow:var(--sh)}
+.portal-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0}
+.portal-info{flex:1;min-width:0}
+.portal-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px;letter-spacing:-.1px}
+.portal-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.portal-link{font-size:10.5px;color:var(--accent);font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.portal-date{font-size:10px;color:var(--faint);font-weight:300}
+.portal-props{font-size:10px;color:var(--muted);background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-weight:500}
+.portal-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-copy{background:var(--accent-dim);color:var(--accent);border:1px solid var(--accent-mid);border-radius:6px;padding:5px 10px;font-family:inherit;font-size:11px;font-weight:600;cursor:pointer;transition:all .13s;white-space:nowrap}
+.btn-copy:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-copy.copied{background:var(--green-dim);color:var(--green);border-color:var(--green)}
+.btn-del{background:none;border:1px solid var(--border);color:var(--faint);border-radius:6px;padding:5px 8px;font-family:inherit;font-size:11px;cursor:pointer;transition:all .13s}
+.btn-del:hover{border-color:var(--red-mid);color:var(--red);background:var(--red-dim)}
+.portal-empty{text-align:center;padding:40px 20px}
+.portal-empty-icon{width:40px;height:40px;background:var(--bg);border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+.portal-empty-txt{font-size:13px;color:var(--faint);font-weight:300}
+
+/* FORM */
+label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:5px}
+input[type=text]{width:100%;border:1.5px solid var(--border);border-radius:var(--r2);padding:9px 12px;font-family:inherit;font-size:13px;color:var(--text);background:var(--bg);outline:none;transition:border-color .13s}
+input[type=text]:focus{border-color:var(--accent);background:var(--surface)}
+.form-row{margin-bottom:14px}
+.hint{font-size:11px;color:var(--faint);margin-top:4px;font-weight:300;line-height:1.4}
+.hint code{background:var(--bg);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-size:10.5px;font-family:monospace}
+.divider{height:1px;background:var(--border);margin:16px 0}
+
+/* PROPERTY SEARCH */
+.prop-search-wrap{position:relative;margin-bottom:8px}
+.prop-search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--faint);pointer-events:none}
+.prop-search{width:100%;border:1.5px solid var(--border);border-radius:var(--r2);padding:8px 12px 8px 32px;font-family:inherit;font-size:12.5px;color:var(--text);background:var(--bg);outline:none}
+.prop-search:focus{border-color:var(--accent);background:var(--surface)}
+
+.prop-list-wrap{max-height:220px;overflow-y:auto;border:1.5px solid var(--border);border-radius:var(--r2);background:var(--surface)}
+.prop-list-wrap::-webkit-scrollbar{width:4px}
+.prop-list-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.prop-opt{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;user-select:none}
+.prop-opt:last-child{border-bottom:none}
+.prop-opt:hover{background:var(--bg)}
+.prop-opt.sel{background:var(--accent-dim)}
+.prop-check{width:15px;height:15px;border:1.5px solid var(--border2);border-radius:3px;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .13s}
+.prop-opt.sel .prop-check{background:var(--accent);border-color:var(--accent)}
+.prop-opt.sel .prop-check svg{display:block}
+.prop-check svg{display:none}
+.prop-opt-name{font-size:12px;font-weight:500;color:var(--body)}
+.prop-opt-addr{font-size:10.5px;color:var(--faint);font-weight:300}
+.prop-opt.sel .prop-opt-name{color:var(--accent);font-weight:600}
+.prop-loading-txt{padding:16px;text-align:center;font-size:12px;color:var(--faint);font-weight:300}
+
+/* Selected chips */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;min-height:0}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--accent-dim);border:1px solid var(--accent-mid);border-radius:4px;padding:3px 7px;font-size:11px;font-weight:500;color:var(--accent)}
+.chip-x{background:none;border:none;cursor:pointer;color:var(--accent);font-size:14px;line-height:1;padding:0;opacity:.6;transition:opacity .13s}
+.chip-x:hover{opacity:1}
+
+/* Buttons */
+.btn-load{width:100%;background:var(--ink2);color:#fff;border:none;border-radius:var(--r2);padding:10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:background .13s;display:flex;align-items:center;justify-content:center;gap:7px;letter-spacing:.1px}
+.btn-load:hover{background:var(--accent)}
+.btn-load:disabled{opacity:.5;cursor:not-allowed}
+.btn-load.loaded{background:var(--green)}
+
+.btn-publish{width:100%;background:var(--accent);color:#fff;border:none;border-radius:var(--r2);padding:11px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .13s;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.1px}
+.btn-publish:hover{background:#1d4ed8;transform:translateY(-1px)}
+.btn-publish:disabled{opacity:.5;cursor:not-allowed}
+
+/* Alerts */
+.alert{border-radius:var(--r2);padding:10px 12px;font-size:12px;margin-top:10px;display:none;line-height:1.5}
+.alert.show{display:block}
+.alert.success{background:var(--green-dim);color:var(--green);border:1px solid #a7f3d0}
+.alert.error{background:var(--red-dim);color:var(--red);border:1px solid var(--red-mid)}
+.alert a{color:inherit;font-weight:600}
+
+/* Loader */
+.mini-spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.up{animation:fadeUp .18s ease both}
+
+@media(max-width:800px){
+  .body{grid-template-columns:1fr;padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-mark">
+        <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <span class="login-co">Climate Mechanical Services</span>
+    </div>
+    <h1 class="login-title">Admin Portal</h1>
+    <p class="login-sub">Enter your team password to continue</p>
+    <input class="login-input" id="login-pw" type="password" placeholder="••••••••" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <p class="login-err" id="login-err">Incorrect password — try again</p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header class="hdr">
+    <div class="hdr-in">
+      <div class="hdr-logo">
+        <div class="hdr-mark">
+          <svg width="14" height="14" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </div>
+        <span class="hdr-name">Climate Mechanical Services</span>
+        <div class="hdr-sep"></div>
+        <span class="hdr-section">Portal Admin</span>
+      </div>
+      <div class="hdr-right">
+        <span class="hdr-user">Admin</span>
+        <button class="btn-logout" onclick="logout()">Sign Out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- LEFT: Active Portals -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="panel-title-icon">
+            <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          Active Client Portals
+          <span class="panel-count" id="portal-count">0</span>
+        </div>
+        <button class="btn-logout" onclick="loadPortals()" style="color:rgba(255,255,255,.6)">↻ Refresh</button>
+      </div>
+      <div class="panel-body">
+        <div class="portal-list" id="portal-list">
+          <div class="portal-empty">
+            <div class="portal-empty-icon">
+              <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            </div>
+            <p class="portal-empty-txt">Loading portals…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Build a Portal -->
+    <div class="panel">
+      <div class="panel-hdr">
+        <div class="panel-title">
+          <div class="panel-title-icon">
+            <svg width="12" height="12" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          Build a Client Portal
+        </div>
+      </div>
+      <div class="panel-body">
+
+        <div class="form-row">
+          <label>Client / Company Name</label>
+          <input type="text" id="client-name" placeholder="e.g. Johnson Medical Group">
+        </div>
+
+        <div class="form-row">
+          <label>Portal URL Slug</label>
+          <input type="text" id="slug" placeholder="e.g. johnson-medical" oninput="sanitizeSlug(this)">
+          <p class="hint">Their link: <code id="slug-preview">yoursite.netlify.app/portal/slug</code></p>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="form-row">
+          <label>Properties</label>
+          <button class="btn-load" id="load-btn" onclick="loadProps()" style="margin-bottom:10px">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Load Properties from BuildOps
+          </button>
+
+          <div id="prop-panel" style="display:none">
+            <div class="prop-search-wrap">
+              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <input class="prop-search" id="prop-search" placeholder="Search properties…" oninput="filterProps()">
+            </div>
+            <div class="prop-list-wrap" id="prop-list-wrap">
+              <p class="prop-loading-txt">Loading…</p>
+            </div>
+            <div class="chips" id="chips"></div>
+          </div>
+          <div class="alert error" id="prop-err"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="btn-publish" id="publish-btn" onclick="publish()">
+          <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>
+          Publish Portal
+        </button>
+
+        <div class="alert success" id="publish-success"></div>
+        <div class="alert error"   id="publish-error"></div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var SITE_URL = window.location.origin;
+var adminPassword = '';
+var allProps = [];
+var selectedIds = {};
+
+// ── AUTH ───────────────────────────────────────────────────────────
+function doLogin() {
+  var pw = document.getElementById('login-pw').value;
+  if (!pw) return;
+  adminPassword = pw;
+  // Test auth by calling publish list endpoint
+  fetch('/api/publish', { headers: { 'X-Admin-Password': pw } })
+    .then(function(r) {
+      if (r.status === 401) {
+        document.getElementById('login-err').style.display = 'block';
+        adminPassword = '';
+      } else {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        loadPortals();
+      }
+    })
+    .catch(function() {
+      document.getElementById('login-err').style.display = 'block';
+      adminPassword = '';
+    });
+}
+
+document.getElementById('login-pw').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+function logout() {
+  adminPassword = '';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+// ── PORTALS LIST ───────────────────────────────────────────────────
+async function loadPortals() {
+  var list = document.getElementById('portal-list');
+  list.innerHTML = '<div class="portal-empty"><div class="portal-empty-icon"><div class="mini-spin" style="border-top-color:var(--accent);border-color:var(--border2)"></div></div><p class="portal-empty-txt">Loading…</p></div>';
+  try {
+    var r = await fetch('/api/publish', { headers: { 'X-Admin-Password': adminPassword } });
+    var d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Failed to load');
+    var portals = d.portals || [];
+    document.getElementById('portal-count').textContent = portals.length;
+    if (!portals.length) {
+      list.innerHTML = '<div class="portal-empty"><div class="portal-empty-icon"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div><p class="portal-empty-txt">No portals yet. Build one →</p></div>';
+      return;
+    }
+    list.innerHTML = portals.map(function(p) {
+      var link = SITE_URL + '/portal/' + p.slug;
+      var updated = p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '';
+      return '<div class="portal-item up">'
+        + '<div class="portal-dot"></div>'
+        + '<div class="portal-info">'
+          + '<div class="portal-name">' + esc(p.clientName) + '</div>'
+          + '<div class="portal-meta">'
+            + '<span class="portal-link">' + link + '</span>'
+            + (p.propCount ? '<span class="portal-props">' + p.propCount + ' ' + (p.propCount===1?'property':'properties') + '</span>' : '')
+            + (updated ? '<span class="portal-date">Updated ' + updated + '</span>' : '')
+          + '</div>'
+        + '</div>'
+        + '<div class="portal-actions">'
+          + '<button class="btn-copy" onclick="copyLink(\'' + esc(link) + '\',this)">Copy Link</button>'
+          + '<button class="btn-del" onclick="deletePortal(\'' + esc(p.slug) + '\',\'' + esc(p.clientName) + '\')">×</button>'
+        + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(err) {
+    list.innerHTML = '<div class="portal-empty"><p class="portal-empty-txt" style="color:var(--red)">Error: ' + esc(err.message) + '</p></div>';
+  }
+}
+
+function copyLink(url, btn) {
+  navigator.clipboard.writeText(url).then(function() {
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(function() { btn.textContent = 'Copy Link'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+async function deletePortal(slug, name) {
+  if (!confirm('Delete the portal for "' + name + '"?\n\nThe client link will stop working immediately.')) return;
+  try {
+    var r = await fetch('/api/publish', {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': adminPassword, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: slug })
+    });
+    var d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Delete failed');
+    loadPortals();
+  } catch(err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+// ── SLUG / FORM ────────────────────────────────────────────────────
+function sanitizeSlug(el) {
+  el.value = el.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-');
+  document.getElementById('slug-preview').textContent = SITE_URL + '/portal/' + (el.value || 'slug');
+}
+
+// ── LOAD PROPERTIES ────────────────────────────────────────────────
+async function loadProps() {
+  var btn = document.getElementById('load-btn');
+  var errEl = document.getElementById('prop-err');
+  errEl.classList.remove('show');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spin"></span> Loading…';
+
+  try {
+    var all = [], page = 0;
+    while (true) {
+      var r = await fetch('/api/proxy?endpoint=' + encodeURIComponent('/v1/properties') + '&page=' + page + '&page_size=100&include_addresses=true');
+      if (!r.ok) { var e = await r.json(); throw new Error(e.error || 'API error ' + r.status); }
+      var d = await r.json();
+      var items = d.items || [];
+      all = all.concat(items);
+      var total = (d.query && d.query.totalCount) || d.totalCount || 0;
+      if (items.length < 100 || (total > 0 && all.length >= total)) break;
+      page++;
+    }
+
+    all.sort(function(a, b) { return (a.companyName||a.name||'').localeCompare(b.companyName||b.name||''); });
+
+    allProps = all.map(function(p) {
+      var addr = '';
+      if (p.addresses && p.addresses.length) {
+        var a = p.addresses.find(function(x){return x.addressType==='propertyAddress';}) || p.addresses[0];
+        if (a) addr = [a.addressLine1, a.city, a.state].filter(Boolean).join(', ');
+      }
+      return { id: p.id, name: p.companyName||p.name||'Unnamed', addr: addr, customerId: p.customerId||'' };
+    });
+
+    document.getElementById('prop-panel').style.display = 'block';
+    renderProps(allProps);
+
+    btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> ' + allProps.length + ' Properties Loaded';
+    btn.style.background = 'var(--green)';
+    btn.classList.add('loaded');
+    btn.disabled = false;
+
+  } catch(err) {
+    errEl.textContent = err.message;
+    errEl.classList.add('show');
+    btn.disabled = false;
+    btn.innerHTML = 'Retry Loading Properties';
+    btn.style.background = '';
+  }
+}
+
+function filterProps() {
+  var q = document.getElementById('prop-search').value.toLowerCase();
+  renderProps(q ? allProps.filter(function(p) { return (p.name+' '+p.addr).toLowerCase().includes(q); }) : allProps);
+}
+
+function renderProps(props) {
+  var wrap = document.getElementById('prop-list-wrap');
+  if (!props.length) { wrap.innerHTML = '<p class="prop-loading-txt">No results.</p>'; return; }
+  wrap.innerHTML = props.map(function(p) {
+    var sel = selectedIds[p.id] ? ' sel' : '';
+    return '<div class="prop-opt' + sel + '" data-id="' + esc(p.id) + '" onclick="toggleProp(this)">'
+      + '<div class="prop-check"><svg width="9" height="9" fill="none" stroke="#fff" stroke-width="3" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>'
+      + '<div><div class="prop-opt-name">' + esc(p.name) + '</div>'
+      + (p.addr ? '<div class="prop-opt-addr">' + esc(p.addr) + '</div>' : '')
+      + '</div></div>';
+  }).join('');
+}
+
+function toggleProp(el) {
+  var id = el.dataset.id;
+  if (selectedIds[id]) { delete selectedIds[id]; el.classList.remove('sel'); }
+  else { selectedIds[id] = true; el.classList.add('sel'); }
+  updateChips();
+}
+
+function updateChips() {
+  var chips = document.getElementById('chips');
+  var ids = Object.keys(selectedIds);
+  chips.innerHTML = ids.map(function(id) {
+    var p = allProps.find(function(x){return x.id===id;});
+    return '<div class="chip">' + esc(p?p.name:id) + '<button class="chip-x" onclick="removeProp(\'' + esc(id) + '\')">×</button></div>';
+  }).join('');
+}
+
+function removeProp(id) {
+  delete selectedIds[id];
+  var el = document.querySelector('.prop-opt[data-id="' + id + '"]');
+  if (el) el.classList.remove('sel');
+  updateChips();
+}
+
+// ── PUBLISH ────────────────────────────────────────────────────────
+async function publish() {
+  var clientName = document.getElementById('client-name').value.trim();
+  var slug       = document.getElementById('slug').value.trim();
+  var ids        = Object.keys(selectedIds);
+
+  var succEl = document.getElementById('publish-success');
+  var errEl  = document.getElementById('publish-error');
+  succEl.classList.remove('show');
+  errEl.classList.remove('show');
+
+  if (!clientName) { errEl.textContent = 'Enter a client name.'; errEl.classList.add('show'); return; }
+  if (!slug)       { errEl.textContent = 'Enter a URL slug.';    errEl.classList.add('show'); return; }
+  if (!ids.length) { errEl.textContent = 'Select at least one property.'; errEl.classList.add('show'); return; }
+
+  var properties = ids.map(function(id) {
+    var p = allProps.find(function(x){return x.id===id;});
+    return { id: id, name: p?p.name:id, address: p?p.addr:'', customerId: p?p.customerId:'' };
+  });
+
+  var btn = document.getElementById('publish-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="mini-spin"></span> Publishing…';
+
+  try {
+    // Fetch template
+    var tr = await fetch('/template.html');
+    if (!tr.ok) throw new Error('Could not load template.html');
+    var tpl = await tr.text();
+    var html = tpl
+      .replace(/\{\{CLIENT_NAME\}\}/g,  clientName)
+      .replace(/\{\{COMPANY_NAME\}\}/g, 'Climate Mechanical Services')
+      .replace('{{PROPERTIES_JSON}}',    JSON.stringify(properties));
+
+    // Publish to Blobs
+    var pr = await fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'X-Admin-Password': adminPassword, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ slug: slug, html: html, clientName: clientName, propCount: ids.length })
+    });
+    var pd = await pr.json();
+    if (!pr.ok) throw new Error(pd.error || 'Publish failed');
+
+    var link = SITE_URL + '/portal/' + slug;
+    succEl.innerHTML = '✓ Portal published! <a href="' + link + '" target="_blank">' + link + '</a> — <strong>copy and send to client</strong>';
+    succEl.classList.add('show');
+
+    // Reset form
+    document.getElementById('client-name').value = '';
+    document.getElementById('slug').value = '';
+    document.getElementById('slug-preview').textContent = SITE_URL + '/portal/slug';
+    selectedIds = {};
+    updateChips();
+    renderProps(allProps);
+
+    // Refresh list
+    loadPortals();
+
+  } catch(err) {
+    errEl.textContent = 'Error: ' + err.message;
+    errEl.classList.add('show');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg> Publish Portal';
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
