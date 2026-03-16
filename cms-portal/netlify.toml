@@ -3,16 +3,26 @@
   publish = "public"
 
 [[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/portal/:slug"
-  to = "/.netlify/functions/serve"
+  from = "/"
+  to = "/admin.html"
   status = 200
 
 [[redirects]]
   from = "/admin"
   to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/api/proxy"
+  to = "/.netlify/functions/proxy"
+  status = 200
+
+[[redirects]]
+  from = "/api/portals"
+  to = "/.netlify/functions/portals"
+  status = 200
+
+[[redirects]]
+  from = "/portal/:slug"
+  to = "/.netlify/functions/serve"
   status = 200
