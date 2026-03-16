@@ -75,14 +75,14 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* HERO STRIP */
 .hero-strip{background:var(--surface);border-bottom:1px solid var(--border);padding:22px 28px 18px}
-.hero-title{font-family:'Sora',sans-serif;font-weight:600;font-size:clamp(20px,2.2vw,30px);font-weight:400;color:var(--text);letter-spacing:-.3px;line-height:1.2;margin-bottom:4px}
+.hero-title{font-family:'Sora',sans-serif;font-weight:600;font-size:clamp(20px,2.2vw,30px);color:var(--text);letter-spacing:-.3px;line-height:1.2;margin-bottom:4px}
 .hero-title em{font-style:italic;color:var(--accent)}
 .hero-sub{font-size:12px;color:var(--muted);font-weight:300;margin-bottom:18px;line-height:1.5}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .kpi{background:var(--bg);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;transition:box-shadow .13s}
 .kpi:hover{box-shadow:var(--shadow-md)}
 .kpi-label{font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--faint);margin-bottom:5px}
-.kpi-value{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;font-weight:400;line-height:1;letter-spacing:-.3px;color:var(--text)}
+.kpi-value{font-family:'Sora',sans-serif;font-size:26px;font-weight:700;line-height:1;letter-spacing:-.3px;color:var(--text)}
 .kpi.accent .kpi-value{color:var(--accent)}
 .kpi.danger .kpi-value{color:var(--red)}
 .kpi.success .kpi-value{color:var(--green)}
@@ -116,7 +116,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .pcs{padding-right:8px;border-right:1px solid var(--border)}
 .pcs:last-child{border-right:none;padding-right:0}
 .pcs-l{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--faint);margin-bottom:2px}
-.pcs-v{font-family:'Sora',sans-serif;font-weight:600;font-size:17px;font-weight:400;color:var(--text);line-height:1}
+.pcs-v{font-family:'Sora',sans-serif;font-weight:600;font-size:17px;color:var(--text);line-height:1}
 .pcs-v.a{color:var(--accent)}.pcs-v.r{color:var(--red)}.pcs-v.g{color:var(--green)}
 .pcs-n{font-size:9px;color:var(--faint);margin-top:1px;font-weight:300}
 
@@ -516,7 +516,7 @@ function qrow(q){
   var scope=esc(q.scopeOfWork||q.description||'No scope of work on file.');
   var cta=q._isOpen?'<a class="cta" href="https://live.buildops.com/public?quoteId='+esc(q.id)+'" target="_blank"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="m10 14 11-11"/></svg>Review &amp; Approve</a>':'';
   var apr=q._isApp&&q.approvalDateTime?'<div class="dr"><dt>Approved</dt><dd>'+fd(q.approvalDateTime)+'</dd></div>':'';
-  return'<div class="row"><div class="rt-q"><div><div class="rname">'+esc(q.name||'Proposal #'+q.quoteNumber)+'</div><div class="rmeta"><span style="font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-mid);border-radius:5px;padding:2px 9px;font-family:'Sora',monospace;letter-spacing:.3px">'+q.quoteNumber+'</span><span class="pill '+sc+'"><span class="pill-dot"></span>'+esc(q._label)+'</span>'+ef+'</div></div><div style="display:flex;justify-content:flex-end"><span class="vtag">V'+q.version+'</span></div><div class="ramt">'+fmt(q.totalAmountQuoted)+'</div><div class="rdate">'+fd(q.expirationDate)+'</div><div class="chev"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div><div class="rbody"><div class="rbi"><div class="rp"><div class="plbl">Scope of Work</div><p class="scope">'+scope+'</p></div><div class="rp"><div class="plbl">Details</div><dl class="dg"><div class="dr"><dt>Ref</dt><dd>#'+q.quoteNumber+'</dd></div><div class="dr"><dt>Version</dt><dd>V'+q.version+(q.versionLabel?' — '+esc(q.versionLabel):'')+'</dd></div><div class="dr"><dt>Amount</dt><dd>'+fmt(q.totalAmountQuoted)+'</dd></div><div class="dr"><dt>Expires</dt><dd>'+fd(q.expirationDate)+'</dd></div>'+apr+'</dl>'+cta+'</div></div></div></div>';
+  return'<div class="row"><div class="rt-q"><div><div class="rname">'+esc(q.name||'Proposal #'+q.quoteNumber)+'</div><div class="rmeta"><span style="font-size:13px;font-weight:700;color:var(--accent);background:var(--accent-dim);border:1px solid var(--accent-mid);border-radius:5px;padding:2px 9px;font-family:monospace;letter-spacing:.3px">'+q.quoteNumber+'</span><span class="pill '+sc+'"><span class="pill-dot"></span>'+esc(q._label)+'</span>'+ef+'</div></div><div style="display:flex;justify-content:flex-end"><span class="vtag">V'+q.version+'</span></div><div class="ramt">'+fmt(q.totalAmountQuoted)+'</div><div class="rdate">'+fd(q.expirationDate)+'</div><div class="chev"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div></div><div class="rbody"><div class="rbi"><div class="rp"><div class="plbl">Scope of Work</div><p class="scope">'+scope+'</p></div><div class="rp"><div class="plbl">Details</div><dl class="dg"><div class="dr"><dt>Ref</dt><dd>#'+q.quoteNumber+'</dd></div><div class="dr"><dt>Version</dt><dd>V'+q.version+(q.versionLabel?' — '+esc(q.versionLabel):'')+'</dd></div><div class="dr"><dt>Amount</dt><dd>'+fmt(q.totalAmountQuoted)+'</dd></div><div class="dr"><dt>Expires</dt><dd>'+fd(q.expirationDate)+'</dd></div>'+apr+'</dl>'+cta+'</div></div></div></div>';
 }
 
 function tblI(rows){return'<div class="tbl"><div class="thead-i"><div class="th">Invoice #</div><div class="th">Description</div><div class="th r">Status</div><div class="th r">Due</div><div class="th r">Amount</div><div class="th"></div></div>'+rows.map(irow).join('')+'</div>';}
