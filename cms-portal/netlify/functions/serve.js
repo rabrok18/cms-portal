@@ -1,10 +1,7 @@
-// serve.js — serves a client portal from JSONBin storage
+const { getStore } = require('@netlify/blobs');
 
 exports.handler = async (event) => {
   try {
-    const BIN = process.env.JSONBIN_BIN_ID;
-    const KEY = process.env.JSONBIN_API_KEY;
-
     const slug = (event.path || '')
       .replace(/^\/portal\//, '')
       .replace(/\.html$/, '')
@@ -15,34 +12,21 @@ exports.handler = async (event) => {
       return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
     }
 
-    if (!BIN || !KEY) {
-      return { statusCode: 500, headers: { 'Content-Type': 'text/html' },
-        body: '<html><body style="font-family:sans-serif;padding:40px;color:#dc2626">Server not configured.</body></html>' };
-    }
+    const store = getStore({ name: 'portals', consistency: 'strong' });
+    const html = await store.get(slug);
 
-    const res = await fetch('https://api.jsonbin.io/v3/b/' + BIN + '/latest', {
-      headers: { 'X-Master-Key': KEY }
-    });
-
-    if (!res.ok) {
-      return { statusCode: 500, headers: { 'Content-Type': 'text/html' },
-        body: '<html><body style="font-family:sans-serif;padding:40px;color:#dc2626">Error loading data.</body></html>' };
-    }
-
-    const data = await res.json();
-    const portal = (data.record || {})[slug];
-
-    if (!portal || !portal.html) {
+    if (!html) {
       return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
     }
 
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
-      body: portal.html,
+      body: html,
     };
 
   } catch (err) {
+    console.error('serve error:', err.message);
     return { statusCode: 500, headers: { 'Content-Type': 'text/html' },
       body: '<html><body style="font-family:sans-serif;padding:40px">Error: ' + err.message + '</body></html>' };
   }
