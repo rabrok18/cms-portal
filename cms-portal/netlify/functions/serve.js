@@ -1,34 +1,26 @@
-const { getStore } = require('@netlify/blobs');
+// serve.js — serves client portal from Netlify Blobs REST API
 
 exports.handler = async (event) => {
   try {
     const slug = (event.path || '')
-      .replace(/^\/portal\//, '')
-      .replace(/\.html$/, '')
-      .replace(/^\//, '')
-      .trim();
+      .replace(/^\/portal\//, '').replace(/\.html$/, '').replace(/^\//, '').trim();
 
-    if (!slug) {
-      return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
-    }
+    if (!slug) return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
 
-    const store = getStore({ name: 'portals', consistency: 'strong' });
-    const html = await store.get(slug);
+    const siteID = process.env.NETLIFY_SITE_ID;
+    const token  = process.env.NETLIFY_AUTH_TOKEN;
+    if (!siteID || !token) return { statusCode: 500, headers: { 'Content-Type': 'text/html' }, body: '<html><body style="font-family:sans-serif;padding:40px;color:#dc2626">Missing server config: NETLIFY_SITE_ID / NETLIFY_AUTH_TOKEN</body></html>' };
 
-    if (!html) {
-      return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
-    }
+    const url = `https://api.netlify.com/api/v1/blobs/${siteID}/portals/${encodeURIComponent(slug)}`;
+    const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
 
-    return {
-      statusCode: 200,
-      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' },
-      body: html,
-    };
+    if (r.status === 404) return { statusCode: 404, headers: { 'Content-Type': 'text/html' }, body: notFound() };
+    if (!r.ok) throw new Error(`Blob fetch failed: ${r.status}`);
 
+    const html = await r.text();
+    return { statusCode: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' }, body: html };
   } catch (err) {
-    console.error('serve error:', err.message);
-    return { statusCode: 500, headers: { 'Content-Type': 'text/html' },
-      body: '<html><body style="font-family:sans-serif;padding:40px">Error: ' + err.message + '</body></html>' };
+    return { statusCode: 500, headers: { 'Content-Type': 'text/html' }, body: `<html><body style="font-family:sans-serif;padding:40px">Error: ${err.message}</body></html>` };
   }
 };
 
