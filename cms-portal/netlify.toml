@@ -1,5 +1,4 @@
 [build]
-  command = "npm install"
   functions = "netlify/functions"
   publish = "public"
 
@@ -14,14 +13,14 @@
   status = 200
 
 [[redirects]]
-  from = "/api/proxy"
-  to = "/.netlify/functions/proxy"
+  from = "/api/portals"
+  to = "/.netlify/functions/portals"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/api/portals"
-  to = "/.netlify/functions/portals"
+  from = "/api/proxy"
+  to = "/.netlify/functions/proxy"
   status = 200
   force = true
 
@@ -30,3 +29,14 @@
   to = "/.netlify/functions/serve"
   status = 200
   force = true
+
+[[redirects]]
+  from = "/api/commission"
+  to = "/.netlify/functions/commission"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/commission"
+  to = "/commission-dashboard.html"
+  status = 200
