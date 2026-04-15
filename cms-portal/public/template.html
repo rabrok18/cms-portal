@@ -236,6 +236,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
   .kpi{min-width:90px;padding:12px 16px 10px 0;margin-right:16px}
   .kpi-val{font-size:18px}
 }
+/* Jobs page */
+.jobs-kpi-strip{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:stretch;overflow-x:auto;scrollbar-width:none}
+.jobs-kpi-strip::-webkit-scrollbar{display:none}
+.jobs-filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 24px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.job-row{border-bottom:1px solid var(--border);transition:background .1s}
+.job-row:last-child{border-bottom:none}
+.job-row:hover{background:#fafbfd}
+.job-row.open{background:#fafbfd}
+.jrt{display:grid;gap:12px;padding:13px 16px;align-items:center;cursor:pointer;user-select:none;grid-template-columns:88px 1fr 100px 96px 22px}
+.thead-j{grid-template-columns:88px 1fr 100px 96px 22px}
+.jnum{display:inline-flex;align-items:center;gap:3px;font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--green);background:var(--green-s);border:1px solid var(--green-b);border-radius:5px;padding:3px 8px;letter-spacing:.3px;white-space:nowrap}
+.jnum-j{font-size:9px;font-weight:700;opacity:.55}
+.p-complete{background:var(--green-s);color:var(--green)}
+.p-reviewed{background:var(--accent-s);color:var(--accent)}
+.p-closed{background:var(--bg);color:var(--muted)}
+.job-detail-grid{display:grid;grid-template-columns:1fr 268px}
+.jd-section{padding:16px 18px}
+.jd-section+.jd-section{border-left:1px solid var(--border);background:var(--card)}
+.jd-summary{font-size:13px;color:var(--body);line-height:1.75}
+@media(max-width:768px){
+  .thead-j{display:none}
+  .jrt{grid-template-columns:76px 1fr 22px}
+  .jrt .ramt,.jrt .rdate{display:none}
+  .job-detail-grid{grid-template-columns:1fr}
+  .jd-section+.jd-section{border-left:none;border-top:1px solid var(--border)}
+}
+
+/* Page sections - show/hide */
+.page-section{display:none}
+.page-section.active{display:block}
+.page-header{display:none}
+.page-header.active{display:flex}
+.page-kpi{display:none}
+.page-kpi.active{display:flex}
+.page-filter{display:none}
+.page-filter.active{display:flex}
 </style>
 </head>
 <body>
@@ -262,10 +298,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 
   <div class="sb-nav">
     <div class="sb-sec-lbl">Menu</div>
-    <div class="sb-item on">
+    <div class="sb-item on" id="nav-proposals" onclick="switchPage('proposals')" style="cursor:pointer">
       <div class="sb-item-icon"><svg width="12" height="12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
       <div><div class="sb-item-label">Proposals</div><div class="sb-item-sub">Open &amp; expired</div></div>
       <span class="sb-badge" id="sb-badge">—</span>
+    </div>
+    <div class="sb-item" id="nav-jobs" onclick="switchPage('jobs')" style="cursor:pointer">
+      <div class="sb-item-icon"><svg width="12" height="12" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg></div>
+      <div><div class="sb-item-label">Jobs</div><div class="sb-item-sub">Completed &amp; reviewed</div></div>
+      <span class="sb-badge" id="sb-badge-jobs">—</span>
     </div>
 
     <div class="sb-sec-lbl" style="margin-top:14px">Properties</div>
@@ -282,7 +323,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
       <div class="tb-crumb">
         <span class="tb-crumb-txt" id="tb-client">—</span>
         <span class="tb-sep">›</span>
-        <span class="tb-cur">Proposals</span>
+        <span class="tb-cur" id="tb-page-title">Proposals</span>
       </div>
     </div>
     <div class="tb-right">
@@ -291,8 +332,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     </div>
   </div>
 
-  <!-- Search -->
-  <div class="search-bar">
+  <!-- Proposals: Search -->
+  <div class="search-bar page-header active" id="proposals-search">
     <div class="search-wrap">
       <svg class="search-ico" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       <input class="search-input" id="search-input" placeholder="Search by name or quote number…" oninput="onSearch(this)">
@@ -300,16 +341,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <button class="search-clear" id="search-clear" onclick="clearSearch()">×</button>
   </div>
 
-  <!-- KPIs -->
-  <div class="kpi-strip">
+  <!-- Proposals: KPIs -->
+  <div class="kpi-strip page-kpi active" id="proposals-kpi">
     <div class="kpi blue"><div class="kpi-lbl">Open</div><div class="kpi-val" id="kpi-open">—</div><div class="kpi-note">proposals</div></div>
     <div class="kpi"><div class="kpi-lbl">Total Value</div><div class="kpi-val" id="kpi-val">—</div><div class="kpi-note">all proposals</div></div>
     <div class="kpi red"><div class="kpi-lbl">Expired</div><div class="kpi-val" id="kpi-exp">—</div><div class="kpi-note">no longer active</div></div>
     <div class="kpi"><div class="kpi-lbl">Expiring Soon</div><div class="kpi-val" id="kpi-soon">—</div><div class="kpi-note">within 7 days</div></div>
   </div>
 
-  <!-- Filters -->
-  <div class="filter-bar">
+  <!-- Proposals: Filters -->
+  <div class="filter-bar page-filter active" id="proposals-filter">
     <span class="fl">Status</span>
     <div class="chip on" onclick="setFilter('all',this)"><span class="chip-d"></span>All</div>
     <div class="chip" onclick="setFilter('open',this)"><span class="chip-d" style="color:var(--accent)"></span>Open</div>
@@ -322,8 +363,45 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
     <span class="result-count" id="result-count"></span>
   </div>
 
-  <div class="content" id="content">
+  <!-- Proposals: Content -->
+  <div class="content page-section active" id="proposals-content">
     <div class="state-wrap"><div class="loader"></div><p class="state-txt">Loading your portal…</p></div>
+  </div>
+
+  <!-- Jobs: Search -->
+  <div class="search-bar page-header" id="jobs-search">
+    <div class="search-wrap">
+      <svg class="search-ico" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="jobs-search-input" placeholder="Search by job number or description…" oninput="onJobSearch(this)">
+    </div>
+    <button class="search-clear" id="jobs-search-clear" onclick="clearJobSearch()">×</button>
+  </div>
+
+  <!-- Jobs: KPIs -->
+  <div class="kpi-strip page-kpi" id="jobs-kpi">
+    <div class="kpi"><div class="kpi-lbl">Total Jobs</div><div class="kpi-val" id="jkpi-total">—</div><div class="kpi-note">completed &amp; reviewed</div></div>
+    <div class="kpi blue"><div class="kpi-lbl">Completed</div><div class="kpi-val" id="jkpi-complete">—</div><div class="kpi-note">work finished</div></div>
+    <div class="kpi"><div class="kpi-lbl">Reviewed</div><div class="kpi-val" id="jkpi-reviewed">—</div><div class="kpi-note">inspected &amp; signed off</div></div>
+    <div class="kpi"><div class="kpi-lbl">Total Value</div><div class="kpi-val" id="jkpi-val">—</div><div class="kpi-note">all jobs</div></div>
+  </div>
+
+  <!-- Jobs: Filters -->
+  <div class="filter-bar page-filter" id="jobs-filter">
+    <span class="fl">Status</span>
+    <div class="chip on" onclick="setJobFilter('all',this)"><span class="chip-d"></span>All</div>
+    <div class="chip" onclick="setJobFilter('completed',this)"><span class="chip-d" style="color:var(--green)"></span>Completed</div>
+    <div class="chip" onclick="setJobFilter('reviewed',this)"><span class="chip-d" style="color:var(--accent)"></span>Reviewed</div>
+    <div class="fdiv"></div>
+    <span class="fl">Sort</span>
+    <div class="chip on" onclick="setJobSort('date',this)">Date</div>
+    <div class="chip" onclick="setJobSort('value',this)">Value</div>
+    <div class="chip" onclick="setJobSort('number',this)">Job #</div>
+    <span class="result-count" id="jobs-result-count"></span>
+  </div>
+
+  <!-- Jobs: Content -->
+  <div class="content page-section" id="jobs-content">
+    <div class="state-wrap"><div class="loader"></div><p class="state-txt">Loading jobs…</p></div>
   </div>
 
   <footer class="foot">
@@ -352,6 +430,9 @@ function isOpen(q){ return(q._os==='Sent to Customer'||q._os==='Sent To Customer
 function isExp(q){ return q._exp; }
 
 var allQ=[], activeProp='all', activeFilter='all', activeSort='expiry', searchQ='';
+var currentPage='proposals';
+var allJobs=[], jobFilter='all', jobSort='date', jobSearchQ='';
+var jobsFetched=false;
 
 function fmt(n){ if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M'; if(n>=1000)return'$'+Math.round(n/1000)+'K'; return'$'+Math.round(n||0).toLocaleString(); }
 function fmtFull(n){ return'$'+Math.round(n||0).toLocaleString('en-US'); }
@@ -404,7 +485,9 @@ function filterProp(pid){
   document.querySelectorAll('.sb-prop').forEach(function(el){ el.classList.toggle('on',el.dataset.pid===pid); });
   var name=pid==='all'?'All Properties':(CONFIG.properties.find(function(p){return p.id===pid;})||{name:pid}).name;
   document.getElementById('tb-prop').textContent=name;
-  closeSb(); render();
+  closeSb();
+  if(currentPage==='proposals') render();
+  if(currentPage==='jobs'&&jobsFetched) renderJobs();
 }
 
 function getFiltered(){
@@ -444,7 +527,7 @@ async function fetchAll(){
     buildSbProps();
     render();
   } catch(err){
-    document.getElementById('content').innerHTML='<div class="state-wrap"><svg width="24" height="24" fill="none" stroke="var(--red)" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p style="color:var(--red);font-weight:600;font-size:12.5px;margin-bottom:3px">Unable to load portal</p><p class="state-txt">'+esc(err.message)+'</p></div>';
+    document.getElementById('proposals-content').innerHTML='<div class="state-wrap"><svg width="24" height="24" fill="none" stroke="var(--red)" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p style="color:var(--red);font-weight:600;font-size:12.5px;margin-bottom:3px">Unable to load portal</p><p class="state-txt">'+esc(err.message)+'</p></div>';
   }
 }
 
@@ -521,7 +604,7 @@ function render(){
     h+=tbl(items);
   }
 
-  var c=document.getElementById('content');
+  var c=document.getElementById('proposals-content');
   c.innerHTML='<div class="up">'+h+'</div>';
   c.querySelectorAll('.rt').forEach(function(el){ el.addEventListener('click',function(){ el.closest('.row').classList.toggle('open'); }); });
 }
@@ -562,6 +645,162 @@ function qrow(q){
         +'<div class="dr"><dt>Amount</dt><dd>'+fmtFull(q.totalAmountQuoted)+'</dd></div>'
         +'<div class="dr"><dt>Expires</dt><dd class="'+(q._exp?'rdate exp':'')+'">'+fd(q.expirationDate)+'</dd></div>'
       +'</dl>'+approvalLink+'</div>'
+    +'</div></div></div>';
+}
+
+// ── PAGE SWITCHING ─────────────────────────────────────────────
+function switchPage(page){
+  currentPage=page;
+  // Nav items
+  document.getElementById('nav-proposals').classList.toggle('on',page==='proposals');
+  document.getElementById('nav-jobs').classList.toggle('on',page==='jobs');
+  // Topbar title
+  document.getElementById('tb-page-title').textContent=page==='proposals'?'Proposals':'Jobs';
+  // Show/hide page sections
+  ['search','kpi','filter','content'].forEach(function(s){
+    var pEl=document.getElementById('proposals-'+s);
+    var jEl=document.getElementById('jobs-'+s);
+    if(pEl){ pEl.classList.toggle('active',page==='proposals'); }
+    if(jEl){ jEl.classList.toggle('active',page==='jobs'); }
+  });
+  closeSb();
+  // Fetch jobs on first visit
+  if(page==='jobs'&&!jobsFetched){ fetchJobs(); }
+}
+
+// ── JOBS ───────────────────────────────────────────────────────
+var J_SHOW={'Completed':1,'Complete':1,'Reviewed':1,'Closed':1,'Done':1};
+
+function isJobComplete(j){ return j._status==='Completed'||j._status==='Complete'||j._status==='Done'; }
+function isJobReviewed(j){ return j._status==='Reviewed'||j._status==='Closed'; }
+
+async function fetchJobs(){
+  try{
+    var propIds=CONFIG.properties.map(function(p){return p.id;});
+    var propSet={};propIds.forEach(function(id){propSet[id]=true;});
+    var raw=[];
+    try{ raw=await fetchProxy('/v1/jobs?page=PAGE&page_size=100'); }catch(e){ console.error('Jobs:',e.message); }
+
+    allJobs=raw.filter(function(j){ return j.propertyId&&propSet[j.propertyId]; })
+      .filter(function(j){ return J_SHOW[j.status]; })
+      .map(function(j){
+        var st=j.status||'';
+        var normalized=(st==='Reviewed'||st==='Closed')?'Reviewed':'Completed';
+        return Object.assign({},j,{
+          _status:normalized,
+          _propId:j.propertyId,
+          _completedDate:j.completedDate||j.closedDate||j.updatedDate||j.lastModifiedDate||null,
+          _total:j.totalAmount||j.total||j.invoiceTotal||j.amount||0,
+          _number:j.jobNumber||j.number||j.id||'',
+          _summary:j.summary||j.description||j.scopeOfWork||j.notes||''
+        });
+      });
+
+    jobsFetched=true;
+    document.getElementById('sb-badge-jobs').textContent=allJobs.length+' total';
+    renderJobs();
+  }catch(err){
+    document.getElementById('jobs-content').innerHTML='<div class="state-wrap"><svg width="24" height="24" fill="none" stroke="var(--red)" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg><p style="color:var(--red);font-weight:600;font-size:12.5px;margin-bottom:3px">Unable to load jobs</p><p class="state-txt">'+esc(err.message)+'</p></div>';
+  }
+}
+
+function onJobSearch(el){
+  jobSearchQ=el.value.trim().toLowerCase();
+  document.getElementById('jobs-search-clear').classList.toggle('show',jobSearchQ.length>0);
+  renderJobs();
+}
+function clearJobSearch(){
+  document.getElementById('jobs-search-input').value='';
+  jobSearchQ='';
+  document.getElementById('jobs-search-clear').classList.remove('show');
+  renderJobs();
+}
+
+function setJobFilter(f,el){
+  jobFilter=f;
+  document.querySelectorAll('#jobs-filter .chip').forEach(function(c,i){ if(i<3) c.classList.toggle('on',['all','completed','reviewed'][i]===f); });
+  renderJobs();
+}
+function setJobSort(s,el){
+  jobSort=s;
+  document.querySelectorAll('#jobs-filter .chip').forEach(function(c,i){ if(i>=4&&i<=6) c.classList.toggle('on',['date','value','number'][i-4]===s); });
+  renderJobs();
+}
+
+function getFilteredJobs(){
+  var items=activeProp==='all'?allJobs:allJobs.filter(function(j){return j._propId===activeProp;});
+  if(jobFilter==='completed') items=items.filter(isJobComplete);
+  if(jobFilter==='reviewed') items=items.filter(isJobReviewed);
+  if(jobSearchQ) items=items.filter(function(j){ return String(j._number).toLowerCase().includes(jobSearchQ)||(j._summary||'').toLowerCase().includes(jobSearchQ)||(j.name||'').toLowerCase().includes(jobSearchQ); });
+  return items.slice().sort(function(a,b){
+    if(jobSort==='date') return new Date(b._completedDate||0)-new Date(a._completedDate||0);
+    if(jobSort==='value') return (b._total||0)-(a._total||0);
+    if(jobSort==='number') return String(b._number).localeCompare(String(a._number),undefined,{numeric:true});
+    return 0;
+  });
+}
+
+function renderJobs(){
+  var items=getFilteredJobs();
+  var completed=items.filter(isJobComplete);
+  var reviewed=items.filter(isJobReviewed);
+  var totalVal=items.reduce(function(s,j){return s+(j._total||0);},0);
+
+  document.getElementById('jkpi-total').textContent=items.length;
+  document.getElementById('jkpi-complete').textContent=completed.length;
+  document.getElementById('jkpi-reviewed').textContent=reviewed.length;
+  document.getElementById('jkpi-val').textContent=fmt(totalVal);
+  document.getElementById('jobs-result-count').textContent=items.length+' job'+(items.length!==1?'s':'')+(jobSearchQ?' matching "'+esc(jobSearchQ)+'"':'');
+
+  var h='';
+  if(!items.length){
+    h='<div class="state-wrap"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><p class="state-txt">'+(jobSearchQ?'No jobs match "'+esc(jobSearchQ)+'". Try a different search.':'No completed or reviewed jobs found for this selection.')+'</p></div>';
+  } else if(activeProp==='all'&&!jobSearchQ){
+    var pm={};CONFIG.properties.forEach(function(p){pm[p.id]=p;});
+    var byP={};items.forEach(function(j){if(!byP[j._propId])byP[j._propId]=[];byP[j._propId].push(j);});
+    // Property group headers + tables
+    Object.keys(byP).forEach(function(pid){
+      var pr=pm[pid]||{},js=byP[pid];
+      var pVal=js.reduce(function(s,j){return s+(j._total||0);},0);
+      h+='<div class="pg"><div><div class="pg-name">'+esc(pr.name||pid)+'</div><div class="pg-addr">'+esc(pr.address||pr.addr||'')+'</div></div><div class="pg-right"><div class="pg-val">'+fmtFull(pVal)+'</div><div class="pg-count">'+js.length+' job'+(js.length!==1?'s':'')+'</div></div></div>'+jobTbl(js);
+    });
+  } else {
+    if(jobSearchQ) h+='<div class="sec"><span class="sec-t">Search Results</span><div class="sec-l"></div></div>';
+    h+=jobTbl(items);
+  }
+
+  var c=document.getElementById('jobs-content');
+  c.innerHTML='<div class="up">'+h+'</div>';
+  c.querySelectorAll('.jrt').forEach(function(el){ el.addEventListener('click',function(){ el.closest('.job-row').classList.toggle('open'); }); });
+}
+
+function jobTbl(rows){
+  return'<div class="tbl"><div class="thead thead-j"><div class="th">Job #</div><div class="th">Description</div><div class="th r">Amount</div><div class="th r">Completed</div><div class="th"></div></div>'+rows.map(jrow).join('')+'</div>';
+}
+
+function jrow(j){
+  var pc=j._status==='Reviewed'?'pill p-reviewed':'pill p-complete';
+  var updated=j._completedDate?'<span class="rupdated">'+fd(j._completedDate)+'</span>':'';
+  var summary=esc(j._summary||'No summary on file.');
+  var propName='';
+  var prop=CONFIG.properties.find(function(p){return p.id===j._propId;});
+  if(prop) propName=prop.name||'';
+
+  return'<div class="job-row"><div class="jrt">'
+    +'<div><span class="jnum"><span class="jnum-j">J</span>'+esc(j._number)+'</span></div>'
+    +'<div><div class="rname">'+esc(j.name||j.summary||'Job #'+j._number)+'</div><div class="rmeta"><span class="'+pc+'"><span class="pill-dot"></span>'+esc(j._status)+'</span>'+(propName?'<span class="rmi">'+esc(propName)+'</span>':'')+updated+'</div></div>'
+    +'<div class="ramt">'+fmtFull(j._total)+'</div>'
+    +'<div class="rdate">'+fd(j._completedDate)+'</div>'
+    +'<div class="chev"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg></div>'
+    +'</div><div class="rbody"><div class="job-detail-grid">'
+      +'<div class="jd-section"><div class="plbl">Summary</div><p class="jd-summary">'+summary+'</p></div>'
+      +'<div class="jd-section"><div class="plbl">Details</div><dl class="dg">'
+        +'<div class="dr"><dt>Job #</dt><dd><span class="jnum" style="font-size:11px"><span class="jnum-j">J</span>'+esc(j._number)+'</span></dd></div>'
+        +'<div class="dr"><dt>Status</dt><dd><span class="'+pc+'" style="font-size:10px"><span class="pill-dot"></span>'+esc(j._status)+'</span></dd></div>'
+        +'<div class="dr"><dt>Amount</dt><dd>'+fmtFull(j._total)+'</dd></div>'
+        +'<div class="dr"><dt>Completed</dt><dd>'+fd(j._completedDate)+'</dd></div>'
+        +(propName?'<div class="dr"><dt>Property</dt><dd>'+esc(propName)+'</dd></div>':'')
+      +'</dl></div>'
     +'</div></div></div>';
 }
 </script>
