@@ -42,7 +42,7 @@ exports.handler = async function(event) {
     const params = event.queryStringParameters || {};
     const endpoint = params.endpoint;
 
-    const allowed = ['/v1/quotes', '/v1/invoices', '/v1/properties', '/v1/customers'];
+    const allowed = ['/v1/quotes', '/v1/invoices', '/v1/properties', '/v1/customers', '/v1/jobs'];
     if (!endpoint || !allowed.some(p => endpoint.startsWith(p))) {
       return { statusCode: 403, headers, body: JSON.stringify({ error: 'Endpoint not allowed' }) };
     }
